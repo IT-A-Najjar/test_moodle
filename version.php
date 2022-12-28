@@ -18,7 +18,7 @@
  * Plugin version and other meta-data are defined here.
  *
  * @package     local_greetings
- * @copyright   2022 Your Name <you@example.com>
+ * @copyright   2022 Abdullah Najjar <eng.abdullah.najjar.2001@gmail.com>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
