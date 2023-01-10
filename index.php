@@ -38,14 +38,11 @@ require_login();
 if (isguestuser()) {
     throw new moodle_exception('noguest');
 }
-
 $allowpost = has_capability('local/greetings:postmessages', $context);
 $deletepost = has_capability('local/greetings:deleteownmessage', $context);
 $deleteanypost = has_capability('local/greetings:deleteanymessage', $context);
 
 $action = optional_param('action', '', PARAM_TEXT);
-$action = optional_param('action', '', PARAM_TEXT);
-
 
 if ($action == 'del') {
     require_sesskey();
@@ -53,25 +50,17 @@ if ($action == 'del') {
     $id = required_param('id', PARAM_TEXT);
 
     if ($deleteanypost || $deletepost) {
-        $params = array('id' => $id);
-
-        // Users without permission should only delete their own post.
-        if(!$deleteanypost) {
-            $params += ['userid' => $USER->id];
-        }
-
         // TODO: Confirm before deleting.
-        $DB->delete_records('local_greetings_messages', $params);
-
-        redirect($PAGE->url);
+        $DB->delete_records('local_greetings_messages', array('id' => $id));
     }
 }
+
 
 $messageform = new local_greetings_message_form();
 
 if ($data = $messageform->get_data()) {
     require_capability('local/greetings:postmessages', $context);
-
+    require_sesskey();
     $message = required_param('message', PARAM_TEXT);
 
     if (!empty($message)) {
@@ -118,6 +107,16 @@ if (has_capability('local/greetings:viewmessages', $context)) {
         echo html_writer::tag('small', userdate($m->timecreated), array('class' => 'text-muted'));
         echo html_writer::end_tag('p');
 
+        echo html_writer::start_tag('p', array('class' => 'card-footer text-center'));
+        echo html_writer::link(
+            new moodle_url(
+                '/local/greetings/index.php',
+                array('action' => 'del', 'id' => $m->id, 'sesskey' => sesskey())
+            ),
+            $OUTPUT->pix_icon('t/delete', '')
+        );
+        echo html_writer::end_tag('p');
+
         if ($deleteanypost || ($deletepost && $m->userid == $USER->id)) {
             echo html_writer::start_tag('p', array('class' => 'card-footer text-center'));
             echo html_writer::link(
@@ -125,7 +124,8 @@ if (has_capability('local/greetings:viewmessages', $context)) {
                     '/local/greetings/index.php',
                     array('action' => 'del', 'id' => $m->id, 'sesskey' => sesskey())
                 ),
-                $OUTPUT->pix_icon('t/delete', '') . get_string('delete')
+                $OUTPUT->pix_icon('t/delete', ''),
+                array('role' => 'button', 'aria-label' => get_string('delete'), 'title' => get_string('delete'))
             );
             echo html_writer::end_tag('p');
         }
